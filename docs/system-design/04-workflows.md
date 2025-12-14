@@ -22,6 +22,10 @@ The translator opens their terminal and runs `xeodocs sync`. The CLI automatical
    - Queries the API: *"Which files should I translate?"*.
    - Creates a hidden folder (e.g., `.xeodocs/`).
    - XeoDocs CLI determines the next step and copies the prompt to translate the next file into the clipboard.
+   - **Context-Aware Prompts:** The generated prompt automatically includes instructions for:
+     - Special file rules (e.g., disabling analytics).
+     - Inserting system features (Banners, Toolbar scripts).
+     - Updating translation metadata.
    - The translator executes the prompt in Windsurf/Cursor.
    - **File Processing Logic:**
      - If the file remains unchanged after AI processing, it is added to `.xeodocs/irrelevant` (content not suitable for translation).

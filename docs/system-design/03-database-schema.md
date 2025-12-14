@@ -54,16 +54,18 @@ Tracks the state of individual files within a project's language scope.
 - `updated_at` (Timestamp)
 
 ### `configurations`
-System-wide key/value configuration.
+Stores system-wide key/value configuration records.
 - `key` (String, PK)
 - `value` (Text)
+- **Usage:** Stores general configuration values, such as prompt templates.
 
-### `user_preferences`
-Key/value storage for user-specific UI settings.
+### `user_preferences` (Admin Configuration)
+Stores administrator preferences as key/value records.
 - `user_id` (UUID, FK -> users.id)
 - `key` (String)
 - `value` (Text)
 - Primary Key: (`user_id`, `key`)
+- **Usage:** Primarily used by the Admin Panel frontend to store preferences like theme, table columns, sorting order, etc.
 
 ### `ignored_paths`
 Paths to ignore for translation (similar to gitignore).

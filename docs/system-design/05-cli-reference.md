@@ -51,3 +51,16 @@ Submits the completed work to the repository and updates the system.
 - **.xeodocs/translated:** List of files modified by the AI/Translator during the current session.
 - **.xeodocs/irrelevant:** List of files processed but deemed not requiring translation (unchanged).
 - **Usage:** Used by `xeodocs next` to track session progress and by `xeodocs submit` for validation.
+
+## Special Prompts & Capabilities
+The CLI is capable of injecting specific instructions into the AI context to handle special system features:
+
+### Special Editing Files
+- **Purpose:** Handle file-specific rules defined in the Admin Panel (e.g., disabling Analytics scripts in translated versions).
+- **Mechanism:** The CLI checks `special_paths` configuration and injects a reminder prompt to the AI when processing matching files.
+
+### Feature Injection
+The CLI provides specific prompts to help the AI implement XeoDocs system features:
+1. **Floating Toolbar Script:** Prompt to insert the script tag required to load the XeoDocs floating toolbar.
+2. **Translation Metadata:** Prompt to create or update a metadata JSON file in the public root directory, consumed by the toolbar.
+3. **Banners:** Prompt to insert content banners (e.g., "This is an automatic translation") that are identified for easy future replacement.
