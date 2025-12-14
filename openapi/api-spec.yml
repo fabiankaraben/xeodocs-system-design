@@ -22,6 +22,27 @@ components:
       name: X-API-Key
 
   schemas:
+    Pagination:
+      type: object
+      required:
+        - page
+        - limit
+        - totalItems
+        - totalPages
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 20
+        totalItems:
+          type: integer
+          example: 100
+        totalPages:
+          type: integer
+          example: 5
+
     Error:
       type: object
       properties:
@@ -46,6 +67,8 @@ components:
         name:
           type: string
         slug:
+          type: string
+        sourceWebsiteUrl:
           type: string
         sourceRepoUrl:
           type: string
@@ -105,17 +128,32 @@ components:
       type: object
       required:
         - id
+        - projectId
+        - languageId
         - path
         - status
       properties:
         id:
           type: string
           format: uuid
+        projectId:
+          type: string
+          format: uuid
+        languageId:
+          type: string
+          format: uuid
         path:
+          type: string
+        checksumOriginal:
+          type: string
+        checksumTranslated:
           type: string
         status:
           $ref: '#/components/schemas/FileStatus'
         lastSyncedAt:
+          type: string
+          format: date-time
+        updatedAt:
           type: string
           format: date-time
 
@@ -123,18 +161,17 @@ components:
       type: object
       required:
         - id
+        - name
         - email
       properties:
         id:
           type: string
           format: uuid
+        name:
+          type: string
         email:
           type: string
           format: email
-        role:
-          type: string
-          enum: [admin, user]
-          default: user
         apiKey:
           type: string
           description: API Key for CLI access (sensitive)
@@ -220,20 +257,41 @@ components:
 
     LoginResponse:
       type: object
+      required:
+        - data
       properties:
-        message:
-          type: string
-        user:
-          $ref: '#/components/schemas/User'
+        data:
+          type: object
+          properties:
+            message:
+              type: string
+            user:
+              $ref: '#/components/schemas/User'
 
     NextFileResponse:
       type: object
+      required:
+        - data
       properties:
-        file:
-          $ref: '#/components/schemas/File'
-        prompt:
-          type: string
-          description: Contextual prompt to be used by the AI for translation
+        data:
+          type: object
+          properties:
+            file:
+              $ref: '#/components/schemas/File'
+            prompt:
+              type: string
+              description: Contextual prompt to be used by the AI for translation
+
+    SubmitResponse:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          properties:
+            updatedCount:
+              type: integer
 
     SubmitRequest:
       type: object
@@ -312,6 +370,22 @@ paths:
         - Users
       summary: List all users
       operationId: listUsers
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Search by name or email
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
       security:
         - cookieAuth: []
         - apiKeyAuth: []
@@ -321,9 +395,17 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/User'
+                type: object
+                required:
+                  - data
+                  - pagination
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
         '401':
           description: Unauthorized
           content:
@@ -345,25 +427,29 @@ paths:
             schema:
               type: object
               required:
+                - name
                 - email
                 - password
               properties:
+                name:
+                  type: string
                 email:
                   type: string
                   format: email
                 password:
                   type: string
-                role:
-                  type: string
-                  enum: [admin, user]
-                  default: user
       responses:
         '201':
           description: User created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/User'
         '400':
           description: Bad Request
           content:
@@ -399,7 +485,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/User'
         '401':
           description: Unauthorized
           content:
@@ -434,21 +525,25 @@ paths:
             schema:
               type: object
               properties:
+                name:
+                  type: string
                 email:
                   type: string
                   format: email
                 password:
                   type: string
-                role:
-                  type: string
-                  enum: [admin, user]
       responses:
         '200':
           description: User updated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/User'
         '400':
           description: Bad Request
           content:
@@ -511,6 +606,21 @@ paths:
             type: string
             format: uuid
           required: true
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Search by key
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
       security:
         - cookieAuth: []
         - apiKeyAuth: []
@@ -520,9 +630,17 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/UserPreference'
+                type: object
+                required:
+                  - data
+                  - pagination
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserPreference'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
         '401':
           description: Unauthorized
           content:
@@ -570,7 +688,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserPreference'
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/UserPreference'
         '400':
           description: Bad Request
           content:
@@ -611,7 +734,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserPreference'
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/UserPreference'
         '401':
           description: Unauthorized
           content:
@@ -666,6 +794,22 @@ paths:
         - Configurations
       summary: List system configurations
       operationId: listConfigurations
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Search by key
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
       security:
         - cookieAuth: []
         - apiKeyAuth: []
@@ -675,9 +819,17 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Configuration'
+                type: object
+                required:
+                  - data
+                  - pagination
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Configuration'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
         '401':
           description: Unauthorized
           content:
@@ -712,7 +864,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Configuration'
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Configuration'
         '400':
           description: Bad Request
           content:
@@ -747,7 +904,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Configuration'
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Configuration'
         '401':
           description: Unauthorized
           content:
@@ -791,7 +953,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Configuration'
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Configuration'
         '400':
           description: Bad Request
           content:
@@ -846,6 +1013,22 @@ paths:
         - Projects
       summary: List all projects
       operationId: listProjects
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Search by name or slug
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
       security:
         - cookieAuth: []
         - apiKeyAuth: []
@@ -855,9 +1038,17 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Project'
+                type: object
+                required:
+                  - data
+                  - pagination
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Project'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
         '401':
           description: Unauthorized
           content:
@@ -886,9 +1077,13 @@ paths:
                   type: string
                 slug:
                   type: string
+                sourceWebsiteUrl:
+                  type: string
                 sourceRepoUrl:
                   type: string
                 sourceBranch:
+                  type: string
+                description:
                   type: string
       responses:
         '201':
@@ -896,7 +1091,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Project'
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Project'
         '400':
           description: Bad Request
           content:
@@ -932,7 +1132,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Project'
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Project'
         '401':
           description: Unauthorized
           content:
@@ -970,6 +1175,8 @@ paths:
                   type: string
                 slug:
                   type: string
+                sourceWebsiteUrl:
+                  type: string
                 sourceRepoUrl:
                   type: string
                 sourceBranch:
@@ -984,7 +1191,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Project'
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Project'
         '400':
           description: Bad Request
           content:
@@ -1046,6 +1258,21 @@ paths:
             type: string
             format: uuid
           required: true
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Search by name or code
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
       security:
         - cookieAuth: []
         - apiKeyAuth: []
@@ -1055,9 +1282,17 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Language'
+                type: object
+                required:
+                  - data
+                  - pagination
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Language'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
         '401':
           description: Unauthorized
           content:
@@ -1106,7 +1341,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Language'
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Language'
         '400':
           description: Bad Request
           content:
@@ -1148,7 +1388,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Language'
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Language'
         '401':
           description: Unauthorized
           content:
@@ -1202,7 +1447,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Language'
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Language'
         '400':
           description: Bad Request
           content:
@@ -1270,6 +1520,21 @@ paths:
             type: string
             format: uuid
           required: true
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Search by pattern
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
       security:
         - cookieAuth: []
         - apiKeyAuth: []
@@ -1279,9 +1544,17 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/IgnoredPath'
+                type: object
+                required:
+                  - data
+                  - pagination
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/IgnoredPath'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
         '401':
           description: Unauthorized
           content:
@@ -1326,7 +1599,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/IgnoredPath'
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/IgnoredPath'
         '400':
           description: Bad Request
           content:
@@ -1368,7 +1646,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/IgnoredPath'
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/IgnoredPath'
         '401':
           description: Unauthorized
           content:
@@ -1417,7 +1700,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/IgnoredPath'
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/IgnoredPath'
         '400':
           description: Bad Request
           content:
@@ -1486,6 +1774,21 @@ paths:
             type: string
             format: uuid
           required: true
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Search by purpose or pattern
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
       security:
         - cookieAuth: []
         - apiKeyAuth: []
@@ -1495,9 +1798,17 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/SpecialPath'
+                type: object
+                required:
+                  - data
+                  - pagination
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SpecialPath'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
         '401':
           description: Unauthorized
           content:
@@ -1545,7 +1856,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SpecialPath'
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/SpecialPath'
         '400':
           description: Bad Request
           content:
@@ -1587,7 +1903,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SpecialPath'
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/SpecialPath'
         '401':
           description: Unauthorized
           content:
@@ -1638,7 +1959,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SpecialPath'
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/SpecialPath'
         '400':
           description: Bad Request
           content:
@@ -1714,10 +2040,25 @@ paths:
             format: uuid
           required: true
         - in: query
+          name: search
+          schema:
+            type: string
+          description: Search by path
+        - in: query
           name: status
           schema:
             $ref: '#/components/schemas/FileStatus'
           description: Filter by status
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
       security:
         - cookieAuth: []
         - apiKeyAuth: []
@@ -1727,9 +2068,17 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/File'
+                type: object
+                required:
+                  - data
+                  - pagination
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/File'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
         '401':
           description: Unauthorized
           content:
@@ -1783,7 +2132,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/File'
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/File'
         '400':
           description: Bad Request
           content:
@@ -1831,7 +2185,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/File'
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/File'
         '401':
           description: Unauthorized
           content:
@@ -1888,7 +2247,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/File'
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    $ref: '#/components/schemas/File'
         '400':
           description: Bad Request
           content:
@@ -2012,12 +2376,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                  updatedCount:
-                    type: integer
+                $ref: '#/components/schemas/SubmitResponse'
         '400':
           description: Bad Request
           content:
@@ -2058,16 +2417,21 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - data
                 properties:
-                  pendingCount:
-                    type: integer
-                  outdatedCount:
-                    type: integer
-                  totalFiles:
-                    type: integer
-                  progressPercentage:
-                    type: number
-                    format: float
+                  data:
+                    type: object
+                    properties:
+                      pendingCount:
+                        type: integer
+                      outdatedCount:
+                        type: integer
+                      totalFiles:
+                        type: integer
+                      progressPercentage:
+                        type: number
+                        format: float
         '401':
           description: Unauthorized
           content:
