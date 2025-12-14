@@ -2314,24 +2314,25 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /workflow/next:
+  /projects/{projectId}/languages/{languageId}/next-file:
     get:
       tags:
         - Workflow
       summary: Get the next file to translate (CLI)
-      operationId: getNextFile
+      operationId: getProjectLanguageNextFile
       description: Returns the highest priority pending/outdated file for the authenticated context (project/lang).
       parameters:
-        - in: query
+        - in: path
           name: projectId
           schema:
             type: string
             format: uuid
           required: true
-        - in: query
-          name: languageCode
+        - in: path
+          name: languageId
           schema:
             type: string
+            format: uuid
           required: true
       security:
         - apiKeyAuth: []
@@ -2355,13 +2356,26 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /workflow/submit:
+  /projects/{projectId}/languages/{languageId}/submissions:
     post:
       tags:
         - Workflow
       summary: Submit translated files (CLI)
-      operationId: submitFiles
+      operationId: submitProjectLanguageFiles
       description: Marks files as translated after CLI submission.
+      parameters:
+        - in: path
+          name: projectId
+          schema:
+            type: string
+            format: uuid
+          required: true
+        - in: path
+          name: languageId
+          schema:
+            type: string
+            format: uuid
+          required: true
       security:
         - apiKeyAuth: []
       requestBody:
@@ -2390,23 +2404,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /workflow/status:
+  /projects/{projectId}/languages/{languageId}/status:
     get:
       tags:
         - Workflow
       summary: Get project translation status (CLI)
-      operationId: getProjectStatus
+      operationId: getProjectLanguageStatus
       parameters:
-        - in: query
+        - in: path
           name: projectId
           schema:
             type: string
             format: uuid
           required: true
-        - in: query
-          name: languageCode
+        - in: path
+          name: languageId
           schema:
             type: string
+            format: uuid
           required: true
       security:
         - apiKeyAuth: []
