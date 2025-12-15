@@ -3,18 +3,35 @@ title: Workflows
 description: The 5-phase workflow from automatic detection to deployment.
 ---
 
-## Phase 1: Automatic Detection (Server)
-1. **Polling & Detection:** The system periodically checks the upstream repository (interval defined in `configurations`).
-   - Updates `projects.last_checked_at`.
-   - Compares the upstream latest commit with `projects.last_commit_hash`.
-2. **Synchronization:** If a new commit is detected:
-   - Updates `projects.last_commit_hash`.
-   - Synchronizes the `main` branch of the *fork*.
-3. **Analysis:** Analyzes the *diff* and updates the database:
-   - Calculates new checksums for modified files.
-   - **Outdated:** If `new_checksum != checksum_original` for existing files, marks them as `outdated`.
-   - **Pending:** Marks new files as `pending` and stores their `checksum_original`.
-4. Sends a notification to the administrator/translator (Email/Dashboard).
+## Phase 0: Project Provisioning & Fork Management
+Synchronization mechanisms are triggered at specific lifecycle events:
+
+1. **On Project Creation (`POST /projects`)**:
+   - Immediately verifies that the fork exists on GitHub or creates it if it doesn't.
+   - *Note:* At this step, neither the commit hash is saved nor the "Sync" executed; only the existence of the fork repository is guaranteed.
+
+2. **On Project Update (`PATCH /projects/{id}`)**:
+   - Immediately re-verifies that the fork exists (in case the slug or original repo URL was changed).
+
+## Phase 1: Automatic Detection (Background Worker)
+The system uses a background worker for periodic synchronization:
+
+1. **Wake Cycle:** The worker wakes up every **1 hour** (configurable via `worker_wake_interval`).
+2. **Check:** In each execution, it reviews all active projects.
+   - Compares the `last_checked_at` date against the configured interval (default **24 hours**, configurable via `project_sync_interval`).
+3. **Execution:** If the time has passed (or if it has never been checked):
+   - **Poll:** Consults the latest commit of the original repository (upstream).
+   - **Sync:** If the hash differs from `projects.last_commit_hash`, executes the synchronization (`merge-upstream`) on GitHub.
+   - **Update:** Updates the database with the new hash (`last_commit_hash`) and the check date (`last_checked_at`).
+   - **Analysis:** Analyzes the *diff* and updates the file statuses:
+     - Calculates new checksums.
+     - Marks files as `outdated` or `pending` accordingly.
+   - **Notify:** Sends a notification to the administrator/translator.
+
+**Flow Summary for a New Project:**
+1. Created -> Fork created on GitHub instantly.
+2. Within the next hour -> Worker detects it has never been checked, fetches current commit, syncs (if needed), and saves initial hash/date.
+3. Afterwards -> Checked every "X" time (defined in `project_sync_interval`).
 
 ## Phase 2: Local Synchronization (Translator + CLI)
 Before executing `xeodocs sync`, the translator must:
