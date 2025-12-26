@@ -11,7 +11,7 @@ trigger: always_on
 
 - This repository is only for design in markdown (with mermaid support) and OpenAPI formats, don't write code here
 
-- Always write the markdown contend and code in English, as well as the comments, even when the prompt is not in English.
+- Always write the content and comments in English, even when the prompt is not in English.
 
 API:
 - Always use camelCase for API field keys in requests and responses

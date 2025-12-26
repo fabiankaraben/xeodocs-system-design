@@ -41,7 +41,6 @@ This directory defines the laws of the system. **Always read this first** before
 ## 3. Domain Modules (Bounded Contexts)
 
 Each folder under `/domains` represents a specific business capability.
-*(Note: Any reference to "Identity" in examples below is just a placeholder for a real domain name).*
 
 * **Co-location:** All documentation, API specs, and Event specs related to a domain must reside within that domain's folder.
 * **Isolation:** A domain should be understandable in isolation, referencing `global` for shared patterns.
@@ -56,8 +55,22 @@ Every domain MUST contain at least one `.md` file (usually `readme.md`) describi
 * Key entities and relationships.
 * **Frontmatter:** Use YAML frontmatter to link to technical specs.
 
+In global files, use the following frontmatter:
+
 ```yaml
 ---
+title: ""
+description: ""
+---
+
+```
+
+In domain files, use the following frontmatter:
+
+```yaml
+---
+title: ""
+description: ""
 domain: {domain-name}
 specs:
   rest: ./openapi.yaml
@@ -92,7 +105,6 @@ You must use a **Fragmented Architecture** that supports two views: **Domain Vie
 1. **Context Selection:**
 * **Frontend/Client Implementation:** Read `/global/gateway/openapi.yaml` to understand the unified public API.
 * **Backend/Microservice Implementation:** Read `/domains/{target-domain}/openapi.yaml` to focus on the specific service contract.
-
 
 2. **Standards:** Ensure generated code follows the patterns defined in `global/standards`.
 3. **Spec Traversal:** Always resolve `$ref` links to understand the full structure.
