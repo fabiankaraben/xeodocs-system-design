@@ -19,31 +19,10 @@ A lightweight tool developed in Go installed in the translator's local environme
 
 - **Key Commands:** `xeodocs login`, `xeodocs clone`, `xeodocs sync`, `xeodocs status`, `xeodocs list`, `xeodocs next`, `xeodocs submit`, `xeodocs logout`, `xeodocs --help`, `xeodocs --version`.
 
-## 3. Git Repository Strategy
+## 3. Domain Architectures
 
-- **`main` Branch:** Exact mirror of the *upstream* (English/original).
-- **`[lang_code]` Branch:** Production branch for the target language (e.g., Spanish).
-- **`local-[lang_code]` Branch:** Translator's working branch.
+Specific architectural decisions are delegated to their respective domains:
 
-## 4. Special File Management
+*   **[Projects Architecture](../../domains/projects/architecture.md):** Defines Git strategies, branching models, and special file handling.
+*   **[Configuration Domain](../../domains/configuration/readme.md):** Defines system-wide settings management.
 
-Configuration resides primarily in the Database, and the API and XeoDocs CLI consider them automatically.
-
-- **Ignored Files:** Functionality similar to `.gitignore` but used to ignore files and directories for translation.
-- **Special Editing Files:** (e.g., disabling Analytics). These rules are configured in the Admin Panel, and `xeodocs-cli` can inject specific *prompts* to remind the AI to apply them.
-
-## 5. Additional System Features
-
-- **XeoDocs CLI** provides a prompt to insert the script that loads a floating XeoDocs Toolbar.
-- **XeoDocs CLI** provides a prompt to create or update, in the root of the website's public directory, a translation metadata file for consumption by the XeoDocs Toolbar.
-- **XeoDocs CLI** provides a prompt to insert banners in the content, identified for future replacement if necessary.
-
-## 6. Configuration
-
-### Administrator Configuration
-- Stored in a database table as key/value records.
-- Primarily used by the Admin Panel frontend to store Administrator preferences (e.g., theme, table columns, sorting).
-
-### System Configuration
-- Stored in a database table as key/value records.
-- Used to store general configuration values, such as prompt templates.

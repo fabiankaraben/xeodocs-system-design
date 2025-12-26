@@ -36,19 +36,49 @@
             "items": [
                 {
                     "title": "Projects",
-                    "href": "/domains/projects"
+                    "href": "/domains/projects/readme",
+                    "items": [
+                        {
+                            "title": "Architecture",
+                            "href": "/domains/projects/architecture"
+                        },
+                        {
+                            "title": "Workflows",
+                            "href": "/domains/projects/workflows"
+                        },
+                        {
+                            "title": "Database Schema",
+                            "href": "/domains/projects/database"
+                        }
+                    ]
                 },
                 {
                     "title": "Identity",
-                    "href": "/domains/identity"
+                    "href": "/domains/identity/readme",
+                    "items": [
+                        {
+                            "title": "Architecture & Security",
+                            "href": "/domains/identity/architecture"
+                        },
+                        {
+                            "title": "Database Schema",
+                            "href": "/domains/identity/database"
+                        }
+                    ]
                 },
                 {
                     "title": "Configuration",
-                    "href": "/domains/configuration"
+                    "href": "/domains/configuration/readme",
+                    "items": [
+                        {
+                            "title": "Database Schema",
+                            "href": "/domains/configuration/database"
+                        }
+                    ]
                 },
                 {
                     "title": "Common",
-                    "href": "/domains/common"
+                    "href": "/domains/common/readme"
                 }
             ]
         }

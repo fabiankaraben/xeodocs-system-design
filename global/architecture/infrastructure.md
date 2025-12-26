@@ -21,21 +21,9 @@ description: Production/dev infrastructure and security measures.
 
 ## Security
 
-### Authentication
-- **Admin Panel:**
-  - Authentication using JWT stored in HTTPOnly Secure Cookies.
-  - Standard Username/Password login.
-- **CLI (Command Line Interface):**
-  - Authenticates via a long-lived API Key assigned to an administrator.
-  - The API Key is passed in headers (e.g., `X-API-Key` or Bearer Token) for all CLI requests.
-
-### Access Control
-- **Role-Based Access:** Currently single role (Administrator), but designed to support granular permissions in the future.
-- **API Security:**
-  - Endpoints are protected and require valid authentication (JWT/Cookie or API Key).
-  - Input validation on all endpoints to prevent injection attacks.
+### Authentication & Access Control
+Authentication strategies (JWT, API Keys) and Access Control logic are defined in the **[Identity Architecture](../../domains/identity/architecture.md)**.
 
 ### Data Protection
-- **Credentials:** Passwords hashed using standard algorithms (e.g., bcrypt/argon2) before storage.
-- **API Keys:** Generated securely and stored in the database.
 - **Connection:** All communication between CLI, Frontend, and Backend should be over HTTPS.
+- **Storage:** Sensitive data is handled according to the Identity domain security standards.
