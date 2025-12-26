@@ -1,0 +1,39 @@
+get:
+  tags:
+    - System
+  summary: System health check
+  operationId: healthCheck
+  security: []
+  responses:
+    '200':
+      description: System is healthy
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: ok
+              version:
+                type: string
+                example: 1.0.0
+      headers:
+        X-RateLimit-Limit:
+          $ref: '../headers/X-RateLimit-Limit.yaml'
+        X-RateLimit-Remaining:
+          $ref: '../headers/X-RateLimit-Remaining.yaml'
+        X-RateLimit-Reset:
+          $ref: '../headers/X-RateLimit-Reset.yaml'
+    '429':
+      description: Too Many Requests
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/Error.yaml'
+    '503':
+      description: Service Unavailable
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/Error.yaml'

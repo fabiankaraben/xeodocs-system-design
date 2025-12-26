@@ -104,45 +104,7 @@ tags:
 paths:
   # System
   /health:
-    get:
-      tags:
-        - System
-      summary: System health check
-      operationId: healthCheck
-      security: []
-      responses:
-        '200':
-          description: System is healthy
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: ok
-                  version:
-                    type: string
-                    example: 1.0.0
-          headers:
-            X-RateLimit-Limit:
-              $ref: '#/components/headers/X-RateLimit-Limit'
-            X-RateLimit-Remaining:
-              $ref: '#/components/headers/X-RateLimit-Remaining'
-            X-RateLimit-Reset:
-              $ref: '#/components/headers/X-RateLimit-Reset'
-        '429':
-          description: Too Many Requests
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '503':
-          description: Service Unavailable
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+    $ref: '../../domains/common/openapi.yaml#/paths/~1health'
 
   # Identity Domain
   /auth/login:
