@@ -1,0 +1,57 @@
+name: Deploy to Vercel
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Content Repo
+        uses: actions/checkout@v4
+        with:
+          path: content-repo
+
+      - name: Checkout App Repo
+        uses: actions/checkout@v4
+        with:
+          repository: xeost/xeocontext
+          path: app-repo
+          # Check if we need a token to clone private repo, assuming it's public or same owner with permissions
+          # If xeost/xeocontext is private, user might need a PAT. 
+          # Assuming standard public or accessible via GITHUB_TOKEN if in same org.
+          
+      - name: Inject Content
+        run: |
+          # Create content directory in app-repo if it doesn't exist
+          mkdir -p app-repo/content
+          
+          # Copy content. 
+          # Note: We want to copy the contents of content-repo INTO app-repo/content
+          # excluding .git and other system files if necessary.
+          # rsync is good for this.
+          rsync -av --exclude='.git' --exclude='.github' content-repo/ app-repo/content/
+          
+          echo "Content injection complete."
+          ls -la app-repo/content
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel Environment Information
+        working-directory: ./app-repo
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Project Artifacts
+        working-directory: ./app-repo
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy Project Artifacts to Vercel
+        working-directory: ./app-repo
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
