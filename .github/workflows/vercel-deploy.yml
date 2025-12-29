@@ -33,13 +33,18 @@ jobs:
           mkdir -p app-repo/content
           
           # Copy content. 
-          # Note: We want to copy the contents of content-repo INTO app-repo/content
-          # excluding .git and other system files if necessary.
-          # rsync is good for this.
           rsync -av --exclude='.git' --exclude='.github' content-repo/ app-repo/content/
           
           echo "Content injection complete."
           ls -la app-repo/content
+
+      - name: Inspect App Structure
+        working-directory: ./app-repo
+        run: |
+          echo "Root structure:"
+          ls -la
+          echo "Package.json content:"
+          cat package.json
 
       - name: Install pnpm
         run: npm install -g pnpm
@@ -50,6 +55,10 @@ jobs:
       - name: Install Dependencies
         working-directory: ./app-repo
         run: pnpm install
+
+      - name: Verify Build (Diagnostic)
+        working-directory: ./app-repo
+        run: pnpm run build
 
       - name: Pull Vercel Environment Information
         working-directory: ./app-repo
